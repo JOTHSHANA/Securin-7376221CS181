@@ -1,163 +1,6 @@
-
-// import React, { useState } from 'react';
-// import { mockCPEData } from '../utils/mockData';
-// import './Table.css';
-
-// const Table = () => {
-//     // State management
-//     const [data, setData] = useState(mockCPEData);
-//     const [page, setPage] = useState(1);
-//     const [limit, setLimit] = useState(15);
-//     const [filters, setFilters] = useState({
-//         title: '',
-//         uri22: '',
-//         uri23: ''
-//     });
-
-//     // Format date helper
-//     const formatDate = (dateString) => {
-//         if (!dateString) return '';
-//         return new Date(dateString).toLocaleDateString('en-US', {
-//             month: 'short',
-//             day: 'numeric',
-//             year: 'numeric'
-//         });
-//     };
-
-//     // Handle filter changes
-//     const handleFilterChange = (field, value) => {
-//         setFilters(prev => ({
-//             ...prev,
-//             [field]: value
-//         }));
-//     };
-
-//     // Filter data based on search terms
-//     const filteredData = data.data.filter(item => {
-//         const matchesTitle = item.cpe_title.toLowerCase().includes(filters.title.toLowerCase());
-//         const matchesUri22 = item.cpe_22_uri.toLowerCase().includes(filters.uri22.toLowerCase());
-//         const matchesUri23 = item.cpe_23_uri.toLowerCase().includes(filters.uri23.toLowerCase());
-//         return matchesTitle && matchesUri22 && matchesUri23;
-//     });
-
-//     // Paginate data
-//     const paginatedData = filteredData.slice(
-//         (page - 1) * limit,
-//         page * limit
-//     );
-
-//     return (
-//         <div className="table-container">
-//             {/* Filters */}
-//             <div className="filters">
-//                 <div className="filter-group">
-//                     <label>Title:</label>
-//                     <input
-//                         type="text"
-//                         value={filters.title}
-//                         onChange={(e) => handleFilterChange('title', e.target.value)}
-//                         placeholder="Search by title..."
-//                     />
-//                 </div>
-
-//                 <div className="filter-group">
-//                     <label>CPE URI 2.2:</label>
-//                     <input
-//                         type="text"
-//                         value={filters.uri22}
-//                         onChange={(e) => handleFilterChange('uri22', e.target.value)}
-//                         placeholder="Search by URI 2.2..."
-//                     />
-//                 </div>
-
-//                 <div className="filter-group">
-//                     <label>CPE URI 2.3:</label>
-//                     <input
-//                         type="text"
-//                         value={filters.uri23}
-//                         onChange={(e) => handleFilterChange('uri23', e.target.value)}
-//                         placeholder="Search by URI 2.3..."
-//                     />
-//                 </div>
-
-//                 {/* Pagination controls */}
-//                 <div className="pagination-controls">
-//                     <select
-//                         value={limit}
-//                         onChange={(e) => setLimit(Number(e.target.value))}
-//                     >
-//                         {[5, 10, 15].map(size => (
-//                             <option key={size} value={size}>{size} per page</option>
-//                         ))}
-//                     </select>
-
-//                     <button onClick={() => setPage(p => Math.max(1, p - 1))}>
-//                         Previous
-//                     </button>
-//                     <span>Page {page}</span>
-//                     <button onClick={() => setPage(p => p + 1)}>
-//                         Next
-//                     </button>
-//                 </div>
-//             </div>
-
-//             {/* Main table */}
-//             <table>
-//                 <thead>
-//                     <tr>
-//                         <th>Title</th>
-//                         <th>CPE URI 2.2</th>
-//                         <th>CPE URI 2.3</th>
-//                         <th>Deprecated Date 2.2</th>
-//                         <th>Deprecated Date 2.3</th>
-//                         <th>References</th>
-//                     </tr>
-//                 </thead>
-//                 <tbody>
-//                     {paginatedData.map((item) => (
-//                         <tr key={item.id}>
-//                             <td>{item.cpe_title}</td>
-//                             <td>{item.cpe_22_uri}</td>
-//                             <td>{item.cpe_23_uri}</td>
-//                             <td>{formatDate(item.cpe_22_deprecation_date)}</td>
-//                             <td>{formatDate(item.cpe_23_deprecation_date)}</td>
-//                             <td>
-//                                 {item.reference_links.slice(0, 2).map((link, index) => (
-//                                     <div key={index} className="reference-link">
-//                                         <a href={link} target="_blank" rel="noopener noreferrer">
-//                                             {link.substring(0, 30)}...
-//                                         </a>
-//                                     </div>
-//                                 ))}
-//                                 {item.reference_links.length > 2 && (
-//                                     <button>
-//                                         ...more
-//                                     </button>
-//                                 )}
-//                             </td>
-//                         </tr>
-//                     ))}
-//                 </tbody>
-//             </table>
-
-//             {/* Empty state */}
-//             {paginatedData.length === 0 && (
-//                 <div className="empty-state">
-//                     No records found matching your criteria.
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
-
-// export default Table;
-
-
-
-
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './Table.css';
 
 const Table = () => {
     // State management
@@ -165,21 +8,39 @@ const Table = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(15);
+    const [limit, setLimit] = useState(10);
     const [filters, setFilters] = useState({
         title: '',
         uri22: '',
         uri23: ''
     });
+    const [totalItems, setTotalItems] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [lastPage, setLastPage] = useState(1);
 
     // API endpoints
-    const API_BASE_URL = 'http://localhost:5000/api'; // Update with your backend URL
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // useEffect(() => {
+    //     const importData = async () => {
+    //         try {
+    //             await axios.get(`${API_BASE_URL}/cpes/import`);
+    //             // Now you can start your normal operations
+    //             fetchData();
+    //         } catch (err) {
+    //             setError('Failed to import data. Please try again later.');
+    //             console.error('Import Error:', err.message);
+    //             setLoading(false);
+    //         }
+    //     };
+
+    //     importData();
+    // }, []);
 
     // Fetch data with pagination and filters
     const fetchData = async () => {
         setLoading(true);
         setError(null);
-
         try {
             const response = await axios.get(`${API_BASE_URL}/cpes`, {
                 params: {
@@ -188,19 +49,40 @@ const Table = () => {
                     ...filters
                 }
             });
-
-            setData(response.data);
+            
+            setData(response.data.data);
+            setTotalItems(response.data.total);
+            setCurrentPage(response.data.page);
+            setLastPage(Math.ceil(response.data.total / limit));
         } catch (err) {
             setError('Failed to fetch data. Please try again later.');
+            console.error('API Error:', err.message);
         } finally {
             setLoading(false);
         }
     };
 
-    // Effect hook to load data when dependencies change
-    React.useEffect(() => {
+    useEffect(() => {
         fetchData();
-    }, [page, limit, filters]);
+    }, [page, limit]);
+
+    // Handle filter changes
+    const handleFilterChange = (field, value) => {
+        setFilters(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    // Handle search submission
+    const handleSearchSubmit = () => {
+        setPage(1); // Reset pagination when searching
+        fetchData();
+    };
+
+    // Pagination handlers
+    const handlePreviousPage = () => setPage(prev => Math.max(1, prev - 1));
+    const handleNextPage = () => setPage(prev => Math.min(lastPage, prev + 1));
 
     // Format date helper
     const formatDate = (dateString) => {
@@ -212,15 +94,12 @@ const Table = () => {
         });
     };
 
-    // Handle filter changes
-    const handleFilterChange = (field, value) => {
-        setFilters(prev => ({
-            ...prev,
-            [field]: value
-        }));
+    // Handle link display
+    const showAllLinks = (links) => {
+        alert('Additional links:\n' + links.join('\n'));
     };
 
-    // Render loading state
+    // Loading state
     if (loading) {
         return (
             <div className="table-container">
@@ -229,7 +108,7 @@ const Table = () => {
         );
     }
 
-    // Render error state
+    // Error state
     if (error) {
         return (
             <div className="table-container">
@@ -251,7 +130,6 @@ const Table = () => {
                         placeholder="Search by title..."
                     />
                 </div>
-
                 <div className="filter-group">
                     <label>CPE URI 2.2:</label>
                     <input
@@ -261,7 +139,6 @@ const Table = () => {
                         placeholder="Search by URI 2.2..."
                     />
                 </div>
-
                 <div className="filter-group">
                     <label>CPE URI 2.3:</label>
                     <input
@@ -271,26 +148,37 @@ const Table = () => {
                         placeholder="Search by URI 2.3..."
                     />
                 </div>
+                {/* Search Button */}
+                <button onClick={handleSearchSubmit}>Search</button>
+            </div>
 
-                {/* Pagination controls */}
-                <div className="pagination-controls">
-                    <select
-                        value={limit}
-                        onChange={(e) => setLimit(Number(e.target.value))}
-                    >
-                        {[15, 25, 50].map(size => (
-                            <option key={size} value={size}>{size} per page</option>
-                        ))}
-                    </select>
-
-                    <button onClick={() => setPage(p => Math.max(1, p - 1))}>
-                        Previous
-                    </button>
-                    <span>Page {page}</span>
-                    <button onClick={() => setPage(p => p + 1)}>
-                        Next
-                    </button>
-                </div>
+            {/* Pagination controls */}
+            <div className="pagination-controls">
+                <select
+                    value={limit}
+                    onChange={(e) => setLimit(Number(e.target.value))}
+                >
+                    {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map(size => (
+                        <option key={size} value={size}>{size} per page</option>
+                    ))}
+                </select>
+                <button
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                >
+                    Previous
+                </button>
+                <span>Page {currentPage} of {lastPage}</span>
+                <button
+                    onClick={handleNextPage}
+                    disabled={currentPage === lastPage}
+                >
+                    Next
+                </button>
+                <span className="total-items">
+                    Showing {((currentPage - 1) * limit) + 1}-{Math.min(currentPage * limit, totalItems)}
+                    of {totalItems} items
+                </span>
             </div>
 
             {/* Main table */}
