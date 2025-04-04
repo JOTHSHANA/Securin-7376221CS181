@@ -1,0 +1,92 @@
+/* Table.css */
+.table-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.filters {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-group label {
+    min-width: 120px;
+}
+
+.filter-group input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.pagination-controls select,
+.pagination-controls button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.reference-link {
+    margin-bottom: 5px;
+}
+
+.reference-link a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.loading,
+.error {
+    text-align: center;
+    padding: 20px;
+}
+
+.error {
+    color: #cc0000;
+}
