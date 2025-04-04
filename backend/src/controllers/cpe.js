@@ -106,8 +106,8 @@ exports.searchCPEs = async (req, res) => {
                 currentItem.deprecation23 = formatDate(node.attributes.date); 
             }
 
-            if (node.name === "reference") {
-                referenceText = ""; // Reset reference text
+            if (node.name === "reference" && node.attributes.href) {
+                currentItem.references.push(node.attributes.href); 
             }
         });
 
@@ -117,9 +117,10 @@ exports.searchCPEs = async (req, res) => {
 
             if (currentElement === "title") {
                 currentItem.title = text;
-            } else if (currentElement === "reference") {
-                referenceText += text; // Capture text inside <reference> tag
-            }
+            } 
+            // else if (currentElement === "reference") {
+            //     referenceText += text; // Capture text inside <reference> tag
+            // }
         });
 
         parser.on("closetag", (tagName) => {

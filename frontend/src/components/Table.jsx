@@ -21,21 +21,7 @@ const Table = () => {
     // API endpoints
     const API_BASE_URL = 'http://localhost:5000/api';
 
-    // useEffect(() => {
-    //     const importData = async () => {
-    //         try {
-    //             await axios.get(`${API_BASE_URL}/cpes/import`);
-    //             // Now you can start your normal operations
-    //             fetchData();
-    //         } catch (err) {
-    //             setError('Failed to import data. Please try again later.');
-    //             console.error('Import Error:', err.message);
-    //             setLoading(false);
-    //         }
-    //     };
-
-    //     importData();
-    // }, []);
+   
 
     // Fetch data with pagination and filters
     const fetchData = async () => {
