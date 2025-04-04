@@ -19,7 +19,7 @@ exports.getAllCPEs = async (req, res) => {
   
       res.json({ page, limit, total, data: rows });
     } catch (err) {
-      console.error("❌ Error fetching CPEs:", err);
+      console.error("Error fetching CPEs:", err);
       res.status(500).json({ error: err.message });
     }
   };
@@ -70,11 +70,11 @@ exports.searchCPEs = async (req, res) => {
         const xmlFilePath = path.join(__dirname, "../data/data.xml");
 
         if (!fs.existsSync(xmlFilePath)) {
-            console.error("❌ XML file not found:", xmlFilePath);
+            console.error("XML file not found:", xmlFilePath);
             return res.status(404).json({ error: "XML file not found" });
         }
 
-        console.log("✅ XML file found. Starting parsing...");
+        console.log("XML file found. Starting parsing...");
 
         const stream = fs.createReadStream(xmlFilePath, { encoding: "utf8" });
         const parser = sax.createStream(true);
@@ -147,25 +147,25 @@ exports.searchCPEs = async (req, res) => {
         });
 
         parser.on("end", async () => {
-            console.log("🛑 XML Parsing completed!");
+            console.log(" XML Parsing completed!");
 
             if (cpeItems.length > 0) {
                 console.log(`🚀 Inserting final batch of ${cpeItems.length} records...`);
                 await insertCPEData(cpeItems);
             }
 
-            console.log("✅ CPE data import completed successfully.");
+            console.log("CPE data import completed successfully.");
             res.json({ message: "CPE data imported successfully" });
         });
 
         parser.on("error", (err) => {
-            console.error("❌ XML Parsing Error:", err);
+            console.error("XML Parsing Error:", err);
             res.status(500).json({ error: "Error parsing XML" });
         });
 
         stream.pipe(parser);
     } catch (err) {
-        console.error("❌ Unexpected Error:", err);
+        console.error("Unexpected Error:", err);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
@@ -179,7 +179,7 @@ function formatDate(isoDate) {
 async function insertCPEData(data) {
     try {
         if (data.length === 0) {
-            console.log("⚠️ No data to insert.");
+            console.log("No data to insert.");
             return;
         }
 
@@ -192,12 +192,12 @@ async function insertCPEData(data) {
             item.title, item.cpe22Uri, item.cpe23Uri, item.references, item.deprecation22, item.deprecation23
         ]);
 
-        console.log("📌 Executing Query:", query);
-        console.log("📌 Batch Size:", data.length);
+        console.log("Executing Query:", query);
+        console.log("Batch Size:", data.length);
 
         const [result] = await db.query(query, [values]);
-        console.log(`✅ Batch insert successful. Inserted Rows: ${result.affectedRows}`);
+        console.log(`Batch insert successful. Inserted Rows: ${result.affectedRows}`);
     } catch (err) {
-        console.error("❌ Database Insert Error:", err);
+        console.error("Database Insert Error:", err);
     }
 }
